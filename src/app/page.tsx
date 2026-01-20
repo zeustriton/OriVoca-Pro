@@ -1,0 +1,2540 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ChevronRight, Brain, Target, Lightbulb, TrendingUp, Users, Heart, Zap, Shield, Building2, Star, Activity } from 'lucide-react'
+
+type Step = 'welcome' | 'profile' | 'personality' | 'interests' | 'aptitudes' | 'values' | 'selfEfficacy' | 'outcomeExpectations' | 'workEnvironment' | 'careerBarriers' | 'results'
+
+export default function VocationalAssessment() {
+  const [currentStep, setCurrentStep] = useState<Step>('welcome')
+  const [assessmentId, setAssessmentId] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
+  const [userAge, setUserAge] = useState<string>('18')
+
+  const steps = [
+    { id: 'welcome', title: 'Bienvenida', icon: Heart },
+    { id: 'profile', title: 'Perfil Actual', icon: Users },
+    { id: 'personality', title: 'Personalidad', icon: Brain },
+    { id: 'interests', title: 'Intereses', icon: Lightbulb },
+    { id: 'aptitudes', title: 'Aptitudes', icon: TrendingUp },
+    { id: 'values', title: 'Valores', icon: Target },
+    { id: 'selfEfficacy', title: 'Autoeficacia', icon: Zap },
+    { id: 'outcomeExpectations', title: 'Expectativas', icon: Star },
+    { id: 'workEnvironment', title: 'Entorno', icon: Building2 },
+    { id: 'careerBarriers', title: 'Barreras', icon: Shield },
+    { id: 'results', title: 'Resultados', icon: Brain },
+  ]
+
+  const handleStart = () => {
+    setCurrentStep('profile')
+  }
+
+  const handleProfileSubmit = async (data: any) => {
+    setUserName(data.name)
+    setUserAge(data.age)
+    setAssessmentId(data.assessmentId)
+    setCurrentStep('personality')
+  }
+
+  const handleStepComplete = async (step: Step, data: any) => {
+    const stepOrder = ['profile', 'personality', 'interests', 'aptitudes', 'values', 'selfEfficacy', 'outcomeExpectations', 'workEnvironment', 'careerBarriers', 'results']
+    const currentIndex = stepOrder.indexOf(step)
+
+    if (currentIndex < stepOrder.length - 1) {
+      setCurrentStep(stepOrder[currentIndex + 1] as Step)
+    }
+  }
+
+  const goToStep = (step: Step) => {
+    setCurrentStep(step)
+  }
+
+  const getStepNumber = (stepId: Step): number => {
+    return steps.findIndex(s => s.id === stepId) + 1
+  }
+
+  const getCurrentStepIndex = (): number => {
+    return steps.findIndex(s => s.id === currentStep)
+  }
+
+  const getCompletedSteps = (): number => {
+    const currentIndex = getCurrentStepIndex()
+    return currentStep === 'welcome' ? 0 : currentIndex
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+      {/* Header */}
+      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                  Orientación Vocacional Pro
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Descubre tu verdadera vocación
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className="gap-1">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              {getCompletedSteps()}/{steps.length - 1} pasos completados
+            </Badge>
+          </div>
+        </div>
+      </header>
+
+      {/* Progress Bar */}
+      {currentStep !== 'welcome' && (
+        <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between max-w-3xl mx-auto">
+              {steps.slice(1).map((step, index) => {
+                const StepIcon = step.icon
+                const isCompleted = getCompletedSteps() > index + 1
+                const isCurrent = currentStep === step.id
+
+                return (
+                  <div key={step.id} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center flex-1">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                          isCompleted
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                            : isCurrent
+                            ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white scale-110 shadow-lg'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <ChevronRight className="w-5 h-5" />
+                        ) : (
+                          <StepIcon className="w-5 h-5" />
+                        )}
+                      </div>
+                      <span className="text-xs mt-1 text-center hidden sm:block">
+                        {step.title}
+                      </span>
+                    </div>
+                    {index < steps.length - 2 && (
+                      <div
+                        className={`flex-1 h-1 mx-2 rounded-full transition-all ${
+                          isCompleted ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 container mx-auto px-4 py-8">
+        {currentStep === 'welcome' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <Brain className="w-12 h-12 text-white" />
+              </div>
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-700 via-pink-700 to-orange-700 dark:from-purple-400 dark:via-pink-400 dark:to-orange-400 bg-clip-text text-transparent">
+                ¿Estás en la carrera correcta?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-2">
+                Un sistema completo de orientación vocacional con datos psicométricos actualizados
+              </p>
+              <p className="text-muted-foreground">
+                Diseñado especialmente para jóvenes de 18 años que tienen dudas sobre su carrera universitaria
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card className="border-2 hover:border-purple-300 dark:hover:border-purple-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Brain className="w-6 h-6 text-purple-700 dark:text-purple-300" />
+                  </div>
+                  <CardTitle>Test de Personalidad</CardTitle>
+                  <CardDescription>
+                    Basado en el modelo Big Five (OCEAN) - Evalúa tu personalidad en 5 dimensiones principales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Apertura a la experiencia
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Responsabilidad
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Extraversión
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Amabilidad
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Neuroticismo (estabilidad emocional)
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-pink-300 dark:hover:border-pink-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Lightbulb className="w-6 h-6 text-pink-700 dark:text-pink-300" />
+                  </div>
+                  <CardTitle>Intereses Vocacionales</CardTitle>
+                  <CardDescription>
+                    Modelo RIASEC de Holland - Descubre tus áreas de interés profesional
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Realista (actividades prácticas)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Investigativo (análisis y investigación)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Artístico (creatividad)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Social (ayudar a otros)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Emprendedor (liderazgo)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full" />
+                      Convencional (organización)
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-orange-300 dark:hover:border-orange-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <TrendingUp className="w-6 h-6 text-orange-700 dark:text-orange-300" />
+                  </div>
+                  <CardTitle>Aptitudes Cognitivas</CardTitle>
+                  <CardDescription>
+                    Evalúa tus habilidades en diferentes áreas del conocimiento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                      Razonamiento verbal
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                      Razonamiento numérico
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                      Razonamiento abstracto
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                      Resolución de problemas
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-green-300 dark:hover:border-green-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Target className="w-6 h-6 text-green-700 dark:text-green-300" />
+                  </div>
+                  <CardTitle>Valores y Motivaciones</CardTitle>
+                  <CardDescription>
+                    Descubre qué es realmente importante para ti en tu vida profesional
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                      Seguridad vs. Riesgo
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                      Dinero vs. Pasión
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                      Independencia vs. Colaboración
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                      Tradición vs. Innovación
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-blue-300 dark:hover:border-blue-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Zap className="w-6 h-6 text-blue-700 dark:text-blue-300" />
+                  </div>
+                  <CardTitle>Autoeficacia Carreras (SCCT)</CardTitle>
+                  <CardDescription>
+                    Teoría de Cognición Social - Evalúa tu confianza en habilidades profesionales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Confianza en toma de decisiones
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Capacidad de resolver problemas
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Resiliencia ante fracasos
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Adaptabilidad al cambio
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-yellow-300 dark:hover:border-yellow-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Star className="w-6 h-6 text-yellow-700 dark:text-yellow-300" />
+                  </div>
+                  <CardTitle>Expectativas de Resultados (SCCT)</CardTitle>
+                  <CardDescription>
+                    Evalúa tus expectativas realistas sobre resultados profesionales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                      Ingresos esperados
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                      Satisfacción laboral
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                      Equilibrio vida-trabajo
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                      Reconocimiento profesional
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Building2 className="w-6 h-6 text-indigo-700 dark:text-indigo-300" />
+                  </div>
+                  <CardTitle>Preferencias de Entorno</CardTitle>
+                  <CardDescription>
+                    Inventario de Strong - Identifica tu entorno laboral ideal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                      Tamaño de organización
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                      Estilo de trabajo
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                      Nivel de interacción
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                      Cultura organizacional
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 hover:border-red-300 dark:hover:border-red-700 transition-all">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center mb-4">
+                    <Shield className="w-6 h-6 text-red-700 dark:text-red-300" />
+                  </div>
+                  <CardTitle>Barreras Percibidas (SCCT)</CardTitle>
+                  <CardDescription>
+                    Identifica obstáculos potenciales en tu desarrollo profesional
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                      Barreras económicas
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                      Barreras sociales
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                      Barreras personales
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                      Estrategias de afrontamiento
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 rounded-xl p-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">Cumplimiento de Normas ITC</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Nuestra plataforma cumple con los estándares de la International Test Commission para evaluaciones digitales:
+                  </p>
+                  <ul className="space-y-1 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Validación psicométrica dinámica
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Soporte multilingüe
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Medidas de accesibilidad
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Control de tiempos de respuesta
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2">
+              <CardHeader>
+                <CardTitle className="text-2xl">¿Qué obtendrás?</CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center text-center p-4">
+                  <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+                    <Brain className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold mb-1">Análisis Profundo</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Evaluación completa de tu perfil psicológico vocacional
+                  </p>
+                </div>
+                <div className="flex flex-col items-center text-center p-4">
+                  <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+                    <TrendingUp className="w-8 h-8 text-pink-600" />
+                  </div>
+                  <h4 className="font-semibold mb-1">Recomendaciones</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Carreras que mejor se adaptan a tu perfil único
+                  </p>
+                </div>
+                <div className="flex flex-col items-center text-center p-4">
+                  <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-3 shadow-lg">
+                    <Target className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h4 className="font-semibold mb-1">Reporte Detallado</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Resultados claros con análisis de tu carrera actual
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-center mt-8">
+              <Button
+                size="lg"
+                onClick={handleStart}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all"
+              >
+                Comenzar Evaluación
+                <ChevronRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'profile' && (
+          <ProfileStep
+            userName={userName}
+            userAge={userAge}
+            onComplete={handleProfileSubmit}
+            onBack={() => setCurrentStep('welcome')}
+          />
+        )}
+
+        {currentStep === 'personality' && (
+          <PersonalityTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('profile')}
+          />
+        )}
+
+        {currentStep === 'interests' && (
+          <InterestsTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('personality')}
+          />
+        )}
+
+        {currentStep === 'aptitudes' && (
+          <AptitudesTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('interests')}
+          />
+        )}
+
+        {currentStep === 'values' && (
+          <ValuesTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('aptitudes')}
+          />
+        )}
+
+        {currentStep === 'selfEfficacy' && (
+          <SelfEfficacyTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('values')}
+          />
+        )}
+
+        {currentStep === 'outcomeExpectations' && (
+          <OutcomeExpectationsTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('selfEfficacy')}
+          />
+        )}
+
+        {currentStep === 'workEnvironment' && (
+          <WorkEnvironmentTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('outcomeExpectations')}
+          />
+        )}
+
+        {currentStep === 'careerBarriers' && (
+          <CareerBarriersTest
+            assessmentId={assessmentId}
+            userName={userName}
+            onComplete={handleStepComplete}
+            onBack={() => setCurrentStep('workEnvironment')}
+          />
+        )}
+
+        {currentStep === 'results' && (
+          <ResultsPage
+            assessmentId={assessmentId}
+            userName={userName}
+            onRestart={() => setCurrentStep('welcome')}
+          />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm mt-auto">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>© 2024 Orientación Vocacional Pro - Sistema de orientación vocacional basado en datos psicométricos</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+// Profile Step Component
+function ProfileStep({ userName, userAge, onComplete, onBack }: { userName: string; userAge: string; onComplete: (data: any) => void; onBack: () => void }) {
+  const [formData, setFormData] = useState({
+    name: userName,
+    age: userAge,
+    email: '',
+    currentCareer: '',
+    currentYear: '1',
+    currentInstitution: '',
+    careerMotivation: '',
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const careers = [
+    'Ingeniería de Sistemas',
+    'Ingeniería Civil',
+    'Medicina',
+    'Derecho',
+    'Administración de Empresas',
+    'Psicología',
+    'Arquitectura',
+    'Diseño Gráfico',
+    'Economía',
+    'Contabilidad',
+    'Periodismo',
+    'Educación',
+    'Biología',
+    'Química',
+    'Física',
+    'Odontología',
+    'Enfermería',
+    'Marketing',
+    'Recursos Humanos',
+    'Otra',
+  ]
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/vocational/assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al guardar el perfil')
+      }
+
+      if (!data.assessmentId) {
+        throw new Error('No se recibió el ID de la evaluación')
+      }
+
+      onComplete({ ...formData, assessmentId: data.assessmentId })
+    } catch (error: any) {
+      console.error('Error al guardar perfil:', error)
+      setError(error.message || 'Ocurrió un error al guardar tu perfil. Por favor intenta nuevamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <Card className="border-2">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-white" />
+          </div>
+          <CardTitle className="text-2xl">Tu Perfil Actual</CardTitle>
+          <CardDescription>
+            Cuéntanos sobre tu carrera actual y cómo te sientes al respecto
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre completo *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Tu nombre"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Edad *</label>
+                <input
+                  type="number"
+                  required
+                  min="16"
+                  max="30"
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="18"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Correo electrónico (opcional)</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="tu@email.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Carrera que cursas actualmente *</label>
+              <select
+                required
+                value={formData.currentCareer}
+                onChange={(e) => setFormData({ ...formData, currentCareer: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="">Selecciona tu carrera</option>
+                {careers.map((career) => (
+                  <option key={career} value={career}>
+                    {career}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Año que cursas *</label>
+                <select
+                  required
+                  value={formData.currentYear}
+                  onChange={(e) => setFormData({ ...formData, currentYear: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="1">1er año</option>
+                  <option value="2">2do año</option>
+                  <option value="3">3er año</option>
+                  <option value="4">4to año</option>
+                  <option value="5">5to año</option>
+                  <option value="6">6to año o más</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Institución (opcional)</label>
+                <input
+                  type="text"
+                  value={formData.currentInstitution}
+                  onChange={(e) => setFormData({ ...formData, currentInstitution: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Nombre de la universidad"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">¿Por qué elegiste esta carrera? *</label>
+              <textarea
+                required
+                value={formData.careerMotivation}
+                onChange={(e) => setFormData({ ...formData, careerMotivation: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[120px]"
+                placeholder="Cuéntanos las razones por las que elegiste tu carrera actual..."
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onBack}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                Volver
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="animate-spin mr-2">⟳</span>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    Continuar
+                    <ChevronRight className="ml-2 w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Personality Test Component
+function PersonalityTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const personalityQuestions = [
+    // Apertura (Openness) - 5 preguntas
+    { factor: 'openness', question: 'Me considero alguien curioso que siempre busca aprender cosas nuevas' },
+    { factor: 'openness', question: 'Disfruto de actividades artísticas, creativas o abstractas' },
+    { factor: 'openness', question: 'Me gusta pensar sobre ideas complejas y filosóficas' },
+    { factor: 'openness', question: 'Tengo una imaginación muy activa' },
+    { factor: 'openness', question: 'Prefiero variedad antes que rutina en mi vida' },
+
+    // Responsabilidad (Conscientiousness) - 5 preguntas
+    { factor: 'conscientiousness', question: 'Soy una persona organizada y ordenada' },
+    { factor: 'conscientiousness', question: 'Me aseguro de terminar las tareas que empiezo' },
+    { factor: 'conscientiousness', question: 'Tiendo a prepararme con anticipación' },
+    { factor: 'conscientiousness', question: 'Soy responsable y confiable en mis compromisos' },
+    { factor: 'conscientiousness', question: 'Me gusta seguir un plan detallado' },
+
+    // Extraversión - 5 preguntas
+    { factor: 'extraversion', question: 'Me siento cómodo(a) socializando con personas nuevas' },
+    { factor: 'extraversion', question: 'Soy alguien energético y activo(a)' },
+    { factor: 'extraversion', question: 'Disfruto ser el centro de atención' },
+    { factor: 'extraversion', question: 'Prefiero trabajar en equipo que solo(a)' },
+    { factor: 'extraversion', question: 'Me reunir con gente me da energía' },
+
+    // Amabilidad (Agreeableness) - 5 preguntas
+    { factor: 'agreeableness', question: 'Me preocupa el bienestar de los demás' },
+    { factor: 'agreeableness', question: 'Tiendo a confiar en las personas' },
+    { factor: 'agreeableness', question: 'Estoy dispuesto(a) a ayudar a los demás incluso si no me conviene' },
+    { factor: 'agreeableness', question: 'Evito conflictos y confrontaciones' },
+    { factor: 'agreeableness', question: 'Me es fácil perdonar' },
+
+    // Neuroticismo (Neuroticism) - baja estabilidad emocional - 5 preguntas
+    { factor: 'neuroticism', question: 'Me preocupo frecuentemente por muchas cosas' },
+    { factor: 'neuroticism', question: 'Me altero fácilmente ante el estrés' },
+    { factor: 'neuroticism', question: 'A menudo me siento tenso(a) o nervioso(a)' },
+    { factor: 'neuroticism', question: 'Mis emociones cambian rápidamente' },
+    { factor: 'neuroticism', question: 'Tiende a ver el lado negativo de las situaciones' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    // Auto advance after short delay
+    setTimeout(() => {
+      if (currentQuestion < personalityQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        // Si es la última pregunta, avanzar a la pantalla de completado
+        setCurrentQuestion(personalityQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < personalityQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/personality', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: personalityQuestions,
+        }),
+      })
+
+      onComplete('personality', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / personalityQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Test de Personalidad</CardTitle>
+                <CardDescription>Big Five - Modelo OCEAN</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {personalityQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < personalityQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {personalityQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {personalityQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿En qué medida describes que esto es cierto para ti?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(147 51 234), rgb(219 39 119))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Muy en desacuerdo'}
+                        {value === 2 && 'En desacuerdo'}
+                        {value === 3 && 'Neutral / Ni de acuerdo ni en desacuerdo'}
+                        {value === 4 && 'De acuerdo'}
+                        {value === 5 && 'Muy de acuerdo'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < personalityQuestions.length - 1 && (
+                  <Button
+                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas del test de personalidad
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                >
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Interests Test Component
+function InterestsTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const interestStatements = [
+    // Realista (R)
+    { code: 'R', statement: 'Me gusta trabajar con herramientas, máquinas o equipos' },
+    { code: 'R', statement: 'Prefiero actividades prácticas y manuales' },
+    { code: 'R', statement: 'Me interesa trabajar al aire libre' },
+    { code: 'R', statement: 'Disfruto construir o reparar cosas' },
+
+    // Investigativo (I)
+    { code: 'I', statement: 'Me gusta analizar problemas complejos' },
+    { code: 'I', statement: 'Disfruto investigar y descubrir cómo funcionan las cosas' },
+    { code: 'I', statement: 'Me interesa la ciencia y la investigación' },
+    { code: 'I', statement: 'Prefiero resolver problemas matemáticos o lógicos' },
+
+    // Artístico (A)
+    { code: 'A', statement: 'Disfruto actividades creativas y artísticas' },
+    { code: 'A', statement: 'Me gusta expresarme a través del arte, música o escritura' },
+    { code: 'A', statement: 'Valoro la belleza y la estética' },
+    { code: 'A', statement: 'Prefiero trabajos que permitan la creatividad' },
+
+    // Social (S)
+    { code: 'S', statement: 'Me gusta ayudar y enseñar a otras personas' },
+    { code: 'S', statement: 'Disfruto trabajar en equipo y colaborar' },
+    { code: 'S', statement: 'Me interesa la salud, educación o servicios sociales' },
+    { code: 'S', statement: 'Prefiero trabajos que implican contacto con personas' },
+
+    // Emprendedor (E)
+    { code: 'E', statement: 'Me gusta liderar y persuadir a otros' },
+    { code: 'E', statement: 'Disfruto la venta y los negocios' },
+    { code: 'E', statement: 'Me interesa emprender y crear mi propio negocio' },
+    { code: 'E', statement: 'Prefiero trabajos con liderazgo y toma de decisiones' },
+
+    // Convencional (C)
+    { code: 'C', statement: 'Me gusta organizar y mantener registros' },
+    { code: 'C', statement: 'Disfruto seguir procedimientos y reglas establecidas' },
+    { code: 'C', statement: 'Valoro la eficiencia y el orden' },
+    { code: 'C', statement: 'Prefiero trabajos que requieren atención al detalle' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < interestStatements.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        // Si es la última pregunta, avanzar a la pantalla de completado
+        setCurrentQuestion(interestStatements.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < interestStatements.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          statements: interestStatements,
+        }),
+      })
+
+      onComplete('interests', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / interestStatements.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-600 to-orange-600 rounded-xl flex items-center justify-center">
+                <Lightbulb className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Test de Intereses Vocacionales</CardTitle>
+                <CardDescription>Modelo RIASEC de Holland</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {interestStatements.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-pink-600 to-orange-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < interestStatements.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {interestStatements.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {interestStatements[currentQuestion].statement}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿En qué medida describes que esto es cierto para ti?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(219 39 119), rgb(249 115 22))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Nada característico de mí'}
+                        {value === 2 && 'Poco característico de mí'}
+                        {value === 3 && 'Neutral / Indeciso(a)'}
+                        {value === 4 && 'Bastante característico de mí'}
+                        {value === 5 && 'Muy característico de mí'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < interestStatements.length - 1 && (
+                  <Button
+                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                    className="bg-gradient-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700"
+                  >
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas del test de intereses
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                >
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700"
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Aptitudes Test Component
+function AptitudesTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const aptitudeQuestions = [
+    // Razonamiento Verbal
+    { category: 'verbal', question: 'Disfruto leer y analizar textos complejos' },
+    { category: 'verbal', question: 'Suelo entender bien el significado de palabras que no conozco por el contexto' },
+    { category: 'verbal', question: 'Me resulta fácil expresar mis ideas por escrito' },
+    { category: 'verbal', question: 'Disfruto debatir y argumentar diferentes puntos de vista' },
+
+    // Razonamiento Numérico
+    { category: 'numerical', question: 'Me resultan fáciles los cálculos matemáticos' },
+    { category: 'numerical', question: 'Disfruto resolver problemas con números y estadísticas' },
+    { category: 'numerical', question: 'Entiendo bien los conceptos financieros y económicos' },
+    { category: 'numerical', question: 'Puedo detectar fácilmente errores en cálculos o datos' },
+
+    // Razonamiento Abstracto
+    { category: 'abstract', question: 'Encuentro patrones y relaciones que otros no ven' },
+    { category: 'abstract', question: 'Disfruto pensar de forma lateral y creativa' },
+    { category: 'abstract', question: 'Me resultan fáciles los puzzles y juegos de lógica' },
+    { category: 'abstract', question: 'Puedo visualizar soluciones a problemas abstractos' },
+
+    // Resolución de Problemas
+    { category: 'problem_solving', question: 'Encuentro satisfactorio enfrentar y resolver problemas difíciles' },
+    { category: 'problem_solving', question: 'Soy capaz de descomponer problemas complejos en partes más simples' },
+    { category: 'problem_solving', question: 'Encuentro múltiples soluciones posibles a un mismo problema' },
+    { category: 'problem_solving', question: 'Puedo tomar decisiones efectivas bajo presión' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < aptitudeQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        // Si es la última pregunta, avanzar a la pantalla de completado
+        setCurrentQuestion(aptitudeQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < aptitudeQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/aptitudes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: aptitudeQuestions,
+        }),
+      })
+
+      onComplete('aptitudes', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / aptitudeQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Test de Aptitudes Cognitivas</CardTitle>
+                <CardDescription>Evaluación de tus habilidades mentales</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {aptitudeQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-orange-600 to-red-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < aptitudeQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {aptitudeQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {aptitudeQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿En qué medida describes que esto es cierto para ti?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(249 115 22), rgb(220 38 38))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Muy en desacuerdo'}
+                        {value === 2 && 'En desacuerdo'}
+                        {value === 3 && 'Neutral'}
+                        {value === 4 && 'De acuerdo'}
+                        {value === 5 && 'Muy de acuerdo'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < aptitudeQuestions.length - 1 && (
+                  <Button
+                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                    className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                  >
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas del test de aptitudes
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                >
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Values Test Component
+function ValuesTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const valuePairs = [
+    { value1: 'Seguridad laboral y estabilidad', value2: 'Desafíos y oportunidades de crecimiento' },
+    { value1: 'Alto ingreso económico', value2: 'Trabajo que me apasione' },
+    { value1: 'Trabajo en equipo y colaboración', value2: 'Independencia y autonomía' },
+    { value1: 'Liderazgo y poder de decisión', value2: 'Contribución especializada técnica' },
+    { value1: 'Innovación y creatividad', value2: 'Tradición y métodos probados' },
+    { value1: 'Reconocimiento social y prestigio', value2: 'Satisfacción personal íntima' },
+    { value1: 'Equilibrio vida personal-trabajo', value2: 'Logro profesional y éxito' },
+    { value1: 'Ayudar directamente a personas', value2: 'Crear impacto a gran escala' },
+    { value1: 'Riesgo y emprendimiento', value2: 'Seguridad y estabilidad financiera' },
+    { value1: 'Flexibilidad horaria', value2: 'Rutina estructurada' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < valuePairs.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        // Si es la última pregunta, avanzar a la pantalla de completado
+        setCurrentQuestion(valuePairs.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < valuePairs.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/values', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          pairs: valuePairs,
+        }),
+      })
+
+      onComplete('values', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / valuePairs.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-teal-600 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Test de Valores Laborales</CardTitle>
+                <CardDescription>Descubre qué es realmente importante para ti</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {valuePairs.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-green-600 to-teal-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < valuePairs.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Pregunta {currentQuestion + 1} de {valuePairs.length}
+                </p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Entre estas dos opciones, ¿cuál prefieres?
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <Button
+                  variant={answers[currentQuestion] === 1 ? 'default' : 'outline'}
+                  onClick={() => handleAnswer(1)}
+                  className="w-full justify-start text-left h-auto py-6 px-6 text-lg"
+                  style={{
+                    background: answers[currentQuestion] === 1
+                      ? 'linear-gradient(to right, rgb(22 163 74), rgb(20 184 166))'
+                      : undefined,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <span className="font-bold">A</span>
+                    </div>
+                    <span>{valuePairs[currentQuestion].value1}</span>
+                  </div>
+                </Button>
+
+                <div className="text-center text-muted-foreground text-sm py-2">
+                  o
+                </div>
+
+                <Button
+                  variant={answers[currentQuestion] === 2 ? 'default' : 'outline'}
+                  onClick={() => handleAnswer(2)}
+                  className="w-full justify-start text-left h-auto py-6 px-6 text-lg"
+                  style={{
+                    background: answers[currentQuestion] === 2
+                      ? 'linear-gradient(to right, rgb(20 184 166), rgb(22 163 74))'
+                      : undefined,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <span className="font-bold">B</span>
+                    </div>
+                    <span>{valuePairs[currentQuestion].value2}</span>
+                  </div>
+                </Button>
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < valuePairs.length - 1 && (
+                  <Button
+                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                    className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                  >
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Todos los tests completados!</h3>
+                <p className="text-muted-foreground">
+                  Ahora vamos a analizar tus resultados y generar tu reporte vocacional
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                >
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                >
+                  Ver Resultados
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Results Page Component
+function ResultsPage({ assessmentId, userName, onRestart }: { assessmentId: string; userName: string; onRestart: () => void }) {
+  const [loading, setLoading] = useState(true)
+  const [results, setResults] = useState<any>(null)
+  const [generating, setGenerating] = useState(true)
+
+  useEffect(() => {
+    generateResults()
+  }, [])
+
+  const generateResults = async () => {
+    try {
+      setGenerating(true)
+
+      const response = await fetch('/api/vocational/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId }),
+      })
+
+      const data = await response.json()
+      setResults(data)
+    } catch (error) {
+      console.error('Error al generar resultados:', error)
+    } finally {
+      setLoading(false)
+      setGenerating(false)
+    }
+  }
+
+  if (loading || generating) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card className="border-2">
+          <CardContent className="py-16 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <Brain className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-semibold mb-3">Analizando tus respuestas...</h2>
+            <p className="text-muted-foreground mb-6">
+              Estamos procesando tus resultados con IA para generar tu reporte vocacional personalizado
+            </p>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 max-w-xs mx-auto overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 h-full rounded-full animate-loading" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!results) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card className="border-2 border-red-200 dark:border-red-800">
+          <CardContent className="py-12 text-center">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Target className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-xl font-semibold mb-3">Error al generar resultados</h2>
+            <p className="text-muted-foreground mb-6">
+              Hubo un problema al procesar tus resultados. Por favor intenta nuevamente.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={onRestart}>
+                Reiniciar
+              </Button>
+              <Button onClick={generateResults}>
+                Intentar de nuevo
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2">
+        <CardContent className="py-8 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Brain className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-700 to-pink-700 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+            Tu Reporte Vocacional
+          </h2>
+          <p className="text-muted-foreground">
+            Análisis personalizado basado en pruebas psicométricas y tecnología de IA
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Career Match */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            Análisis de tu Carrera Actual
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="font-medium">Coincidencia con {results.currentCareer || 'tu carrera actual'}</span>
+                <span className="font-bold text-lg">{results.careerMatch || 0}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    results.careerMatch >= 70
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                      : results.careerMatch >= 40
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                      : 'bg-gradient-to-r from-red-500 to-pink-500'
+                  }`}
+                  style={{ width: `${results.careerMatch || 0}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <h4 className="font-semibold mb-2">Análisis:</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {results.analysis?.careerAnalysis || 'Procesando análisis...'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Personality Results */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Brain className="w-5 h-5" />
+            Perfil de Personalidad (Big Five)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {results.personalityResults && typeof results.personalityResults === 'object' ? (
+              Object.entries(results.personalityResults).map(([factor, value]: [string, any]) => (
+                <div key={factor}>
+                  <div className="flex justify-between mb-2">
+                    <span className="capitalize font-medium">{factor.replace('_', ' ')}</span>
+                    <span className="font-bold">{Math.round((value as number) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full"
+                      style={{ width: `${(value as number) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">Resultados no disponibles</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Interests Results */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Lightbulb className="w-5 h-5" />
+            Intereses Vocacionales (RIASEC)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {results.interestsResults && typeof results.interestsResults === 'object' ? (
+              Object.entries(results.interestsResults).map(([code, value]: [string, any]) => (
+                <div key={code}>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">
+                      {code === 'R' && 'Realista'}
+                      {code === 'I' && 'Investigativo'}
+                      {code === 'A' && 'Artístico'}
+                      {code === 'S' && 'Social'}
+                      {code === 'E' && 'Emprendedor'}
+                      {code === 'C' && 'Convencional'}
+                    </span>
+                    <span className="font-bold">{Math.round((value as number) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-pink-500 to-orange-500 h-full rounded-full"
+                      style={{ width: `${(value as number) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">Resultados no disponibles</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recommended Careers */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Carreras Recomendadas para Ti
+          </CardTitle>
+          <CardDescription>
+            Basado en tu perfil de personalidad, intereses, aptitudes y valores
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            {results.recommendedCareers && Array.isArray(results.recommendedCareers) ? (
+              results.recommendedCareers.slice(0, 6).map((career: any, index: number) => (
+                <div
+                  key={index}
+                  className="p-4 border rounded-lg hover:border-purple-300 dark:hover:border-purple-700 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold">{career.name}</h4>
+                    <Badge variant={index === 0 ? 'default' : 'outline'}>
+                      #{index + 1}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {career.description}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Coincidencia:</span>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full"
+                        style={{ width: `${career.match || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-bold">{career.match || 0}%</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground col-span-2">Recomendaciones no disponibles</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Analysis */}
+      <Card className="border-2 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Brain className="w-5 h-5" />
+            Análisis Personalizado con IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="text-sm whitespace-pre-line">
+              {results.analysis?.fullAnalysis || 'Procesando análisis...'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <Card className="border-2">
+        <CardContent className="py-6">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={onRestart}
+              variant="outline"
+              className="flex-1 sm:flex-none"
+            >
+              Iniciar nueva evaluación
+            </Button>
+            <Button
+              onClick={() => window.print()}
+              className="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              Imprimir reporte
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ==================== SCCT SELF-EFFICACY TEST ====================
+function SelfEfficacyTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  // SCCT: Autoeficacia de carrera (Lent, Brown & Hackett)
+  const selfEfficacyQuestions = [
+    { domain: 'decision', question: 'Tengo confianza en mi capacidad para tomar decisiones sobre mi carrera' },
+    { domain: 'decision', question: 'Puedo evaluar diferentes opciones profesionales con claridad' },
+    { domain: 'problem_solving', question: 'Puedo resolver problemas complejos en mi área de interés' },
+    { domain: 'problem_solving', question: 'Encuentro soluciones creativas a los desafíos' },
+    { domain: 'resilience', question: 'Me recupero rápidamente cuando cometes un error' },
+    { domain: 'resilience', question: 'Aprendo de mis fracasos en lugar de desanimarme' },
+    { domain: 'adaptability', question: 'Me adapto fácilmente a nuevas situaciones o cambios' },
+    { domain: 'adaptability', question: 'Puedo trabajar en diferentes contextos sin problemas' },
+    { domain: 'communication', question: 'Me comunico efectivamente con compañeros y superiores' },
+    { domain: 'communication', question: 'Puedo explicar mis ideas claramente' },
+    { domain: 'teamwork', question: 'Trabajo bien en equipos diversos' },
+    { domain: 'teamwork', question: 'Contribuyo positivamente al éxito del equipo' },
+    { domain: 'initiative', question: 'Tomo iniciativa en proyectos sin que me lo pidan' },
+    { domain: 'initiative', question: 'Busco activamente oportunidades para aprender y crecer' },
+    { domain: 'persistence', question: 'Me mantengo enfocado en metas a largo plazo' },
+    { domain: 'persistence', question: 'No abandono fácilmente cuando las cosas se dificultan' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < selfEfficacyQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        setCurrentQuestion(selfEfficacyQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < selfEfficacyQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/self-efficacy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: selfEfficacyQuestions,
+        }),
+      })
+
+      onComplete('selfEfficacy', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / selfEfficacyQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Autoeficacia Carreras (SCCT)</CardTitle>
+                <CardDescription>Teoría de Cognición Social de la Carrera</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {selfEfficacyQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < selfEfficacyQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {selfEfficacyQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {selfEfficacyQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  En una escala del 1 (Muy en desacuerdo) al 5 (Muy de acuerdo)
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(37 99 235), rgb(8 145 178))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Muy en desacuerdo'}
+                        {value === 2 && 'En desacuerdo'}
+                        {value === 3 && 'Neutral'}
+                        {value === 4 && 'De acuerdo'}
+                        {value === 5 && 'Muy de acuerdo'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button variant="outline" onClick={() => setCurrentQuestion(currentQuestion - 1)}>
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < selfEfficacyQuestions.length - 1 && (
+                  <Button onClick={() => setCurrentQuestion(currentQuestion + 1)} className="bg-gradient-to-r from-blue-600 to-cyan-600">
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas de autoeficacia
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" onClick={onBack}>Volver</Button>
+                <Button onClick={handleSubmit} className="bg-gradient-to-r from-blue-600 to-cyan-600">Continuar</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ==================== OUTCOME EXPECTATIONS TEST ====================
+function OutcomeExpectationsTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const outcomeQuestions = [
+    { category: 'financial', question: 'Espero obtener ingresos que cubran mis necesidades básicas' },
+    { category: 'financial', question: 'Espero alcanzar estabilidad financiera a mediano plazo' },
+    { category: 'satisfaction', question: 'Espero encontrar satisfacción personal en mi trabajo' },
+    { category: 'satisfaction', question: 'Espero que mi trabajo sea significativo y útil' },
+    { category: 'balance', question: 'Espero mantener equilibrio entre vida personal y trabajo' },
+    { category: 'balance', question: 'Espero tener tiempo para familia y actividades personales' },
+    { category: 'growth', question: 'Espero oportunidades continuas de desarrollo profesional' },
+    { category: 'growth', question: 'Espero aprender constantemente en mi carrera' },
+    { category: 'recognition', question: 'Espero ser reconocido por mis logros' },
+    { category: 'recognition', question: 'Espero recibir feedback constructivo regularmente' },
+    { category: 'autonomy', question: 'Espero tener autonomía en mis decisiones laborales' },
+    { category: 'autonomy', question: 'Espero gestionar mis propias tareas y proyectos' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < outcomeQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        setCurrentQuestion(outcomeQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < outcomeQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/outcome-expectations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: outcomeQuestions,
+        }),
+      })
+
+      onComplete('outcomeExpectations', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / outcomeQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-600 to-orange-600 rounded-xl flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Expectativas de Resultados (SCCT)</CardTitle>
+                <CardDescription>Evaluación de expectativas profesionales realistas</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {outcomeQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-yellow-600 to-orange-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < outcomeQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {outcomeQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {outcomeQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿Qué tan realista es esta expectativa para ti?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(234 179 8), rgb(249 115 22))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Muy poco realista'}
+                        {value === 2 && 'Poco realista'}
+                        {value === 3 && 'Algo realista'}
+                        {value === 4 && 'Bastante realista'}
+                        {value === 5 && 'Muy realista'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button variant="outline" onClick={() => setCurrentQuestion(currentQuestion - 1)}>
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < outcomeQuestions.length - 1 && (
+                  <Button onClick={() => setCurrentQuestion(currentQuestion + 1)} className="bg-gradient-to-r from-yellow-600 to-orange-600">
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas sobre expectativas
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" onClick={onBack}>Volver</Button>
+                <Button onClick={handleSubmit} className="bg-gradient-to-r from-yellow-600 to-orange-600">Continuar</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ==================== WORK ENVIRONMENT TEST ====================
+function WorkEnvironmentTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const environmentQuestions = [
+    { aspect: 'size', question: 'Prefiero trabajar en organizaciones pequeñas donde conozco a todos' },
+    { aspect: 'size', question: 'Prefiero organizaciones medianas con variedad de departamentos' },
+    { aspect: 'size', question: 'Prefiero grandes corporaciones con más recursos' },
+    { aspect: 'style', question: 'Prefiero un ambiente estructurado con procedimientos claros' },
+    { aspect: 'style', question: 'Prefiero un ambiente flexible donde pueda improvisar' },
+    { aspect: 'interaction', question: 'Prefiero trabajo independiente con mínima supervisión' },
+    { aspect: 'interaction', question: 'Prefiero colaborar en equipos constantemente' },
+    { aspect: 'interaction', question: 'Prefiero interactuar frecuentemente con clientes o usuarios' },
+    { aspect: 'culture', question: 'Prefiero una cultura competitiva de alto desempeño' },
+    { aspect: 'culture', question: 'Prefiero una cultura colaborativa y de apoyo' },
+    { aspect: 'culture', question: 'Prefiero una cultura innovadora que asume riesgos' },
+    { aspect: 'culture', question: 'Prefiero una cultura estable y tradicional' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < environmentQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        setCurrentQuestion(environmentQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < environmentQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/work-environment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: environmentQuestions,
+        }),
+      })
+
+      onComplete('workEnvironment', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / environmentQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Preferencias de Entorno (Strong)</CardTitle>
+                <CardDescription>Inventario de Preferencias Ocupacionales</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {environmentQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < environmentQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {environmentQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {environmentQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿En qué medida prefieres esto en tu trabajo ideal?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(79 70 229), rgb(147 51 234))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Nada prefiero'}
+                        {value === 2 && 'Prefiero poco'}
+                        {value === 3 && 'Neutral'}
+                        {value === 4 && 'Prefiero bastante'}
+                        {value === 5 && 'Prefiero mucho'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button variant="outline" onClick={() => setCurrentQuestion(currentQuestion - 1)}>
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < environmentQuestions.length - 1 && (
+                  <Button onClick={() => setCurrentQuestion(currentQuestion + 1)} className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has respondido todas las preguntas sobre entorno laboral
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" onClick={onBack}>Volver</Button>
+                <Button onClick={handleSubmit} className="bg-gradient-to-r from-indigo-600 to-purple-600">Continuar</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ==================== CAREER BARRIERS TEST ====================
+function CareerBarriersTest({ assessmentId, userName, onComplete, onBack }: any) {
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<Record<number, number>>({})
+
+  const barrierQuestions = [
+    { type: 'economic', question: 'Mis recursos económicos limitan mis opciones educativas' },
+    { type: 'economic', question: 'Tengo dificultad para financiar mis estudios o capacitaciones' },
+    { type: 'social', question: 'Mi familia presiona hacia una carrera específica' },
+    { type: 'social', question: 'Mis amigos o comunidad no apoyan mis aspiraciones' },
+    { type: 'personal', question: 'La falta de confianza limita mis posibilidades' },
+    { type: 'personal', question: 'Mis habilidades actuales no son suficientes para mis objetivos' },
+    { type: 'personal', question: 'Miedo al fracaso me impide tomar riesgos profesionales' },
+    { type: 'coping', question: 'Busco activamente soluciones cuando enfrento barreras' },
+    { type: 'coping', question: 'Busco apoyo de mentores o consejeros profesionales' },
+    { type: 'coping', question: 'Ajusto mis expectativas cuando enfrento obstáculos' },
+  ]
+
+  const handleAnswer = (value: number) => {
+    const newAnswers = { ...answers, [currentQuestion]: value }
+    setAnswers(newAnswers)
+
+    setTimeout(() => {
+      if (currentQuestion < barrierQuestions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        setCurrentQuestion(barrierQuestions.length)
+      }
+    }, 300)
+  }
+
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < barrierQuestions.length) {
+      alert('Por favor responde todas las preguntas')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/vocational/career-barriers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId,
+          answers,
+          questions: barrierQuestions,
+        }),
+      })
+
+      onComplete('careerBarriers', { answers })
+    } catch (error) {
+      console.error('Error al guardar respuestas:', error)
+    }
+  }
+
+  const progress = ((currentQuestion + 1) / barrierQuestions.length) * 100
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Barreras Percibidas (SCCT)</CardTitle>
+                <CardDescription>Identificación de obstáculos profesionales</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline">
+              {currentQuestion + 1} / {barrierQuestions.length}
+            </Badge>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-red-600 to-pink-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {currentQuestion < barrierQuestions.length ? (
+            <div className="space-y-8">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Pregunta {currentQuestion + 1} de {barrierQuestions.length}
+                </p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">
+                  {barrierQuestions[currentQuestion].question}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  ¿En qué medida esto aplica a tu situación actual?
+                </p>
+              </div>
+
+              <div className="space-y-3 max-w-md mx-auto">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Button
+                    key={value}
+                    variant={answers[currentQuestion] === value ? 'default' : 'outline'}
+                    onClick={() => handleAnswer(value)}
+                    className="w-full justify-start text-left h-auto py-4 px-6"
+                    style={{
+                      background: answers[currentQuestion] === value
+                        ? 'linear-gradient(to right, rgb(220 38 38), rgb(219 39 119))'
+                        : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold">
+                        {value === 1 && 'Para nada es un problema'}
+                        {value === 2 && 'Es un pequeño problema'}
+                        {value === 3 && 'Es un problema moderado'}
+                        {value === 4 && 'Es un gran problema'}
+                        {value === 5 && 'Es un problema muy grande'}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-3">
+                {currentQuestion > 0 && (
+                  <Button variant="outline" onClick={() => setCurrentQuestion(currentQuestion - 1)}>
+                    Anterior
+                  </Button>
+                )}
+                {answers[currentQuestion] !== undefined && currentQuestion < barrierQuestions.length - 1 && (
+                  <Button onClick={() => setCurrentQuestion(currentQuestion + 1)} className="bg-gradient-to-r from-red-600 to-pink-600">
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto">
+                <ChevronRight className="w-10 h-10 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold mb-2">¡Completado!</h3>
+                <p className="text-muted-foreground">
+                  Has identificado tus barreras profesionales
+                </p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" onClick={onBack}>Volver</Button>
+                <Button onClick={handleSubmit} className="bg-gradient-to-r from-red-600 to-pink-600">Continuar</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
